@@ -59,6 +59,26 @@ function to_array(int $placement): array
 }
 
 // 配列になったのでPHPで扱いやすくなりました
+// foreach (combination(16, 4) as $placement) {
+//     var_dump(to_array($placement));
+// }
+
+function visualize_array(array $matrix): void
+{
+    for ($row = 0; $row <= 3; $row++) {
+        for ($col = 0; $col <= 3; $col++) {
+            if ($matrix[$row][$col] === 1) {
+                echo '#';
+            } else {
+                echo '.';
+            }
+        }
+        echo "\n";
+    }
+    echo "\n";
+}
+
+// 表示してみよう
 foreach (combination(16, 4) as $placement) {
-    var_dump(to_array($placement));
+    visualize_array(to_array($placement));
 }
