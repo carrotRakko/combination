@@ -29,9 +29,9 @@ function combination(int $n, int $k): array
 
 function visualize(int $placement): void
 {
-    for ($col = 0; $col <= 3; $col++) {
-        for ($row = 0; $row <= 3; $row++) {
-            if (($placement >> (15 - 4 * $col - $row)) % 2 === 1) {
+    for ($row = 0; $row <= 3; $row++) {
+        for ($col = 0; $col <= 3; $col++) {
+            if (($placement >> (15 - 4 * $row - $col)) % 2 === 1) {
                 echo '#';
             } else {
                 echo '.';
