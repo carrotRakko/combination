@@ -79,6 +79,48 @@ function visualize_array(array $matrix): void
 }
 
 // 表示してみよう
+// foreach (combination(16, 4) as $placement) {
+//     visualize_array(to_array($placement));
+// }
+
+function is_connected($matrix): bool
+{
+    $q = new SplQueue();
+    $reached = array_fill(0, 4, array_fill(0, 4, 0));
+    
+    for ($row = 0; $row <= 3; $row++) {
+        for ($col = 0; $col <= 3; $col++) {
+            if ($matrix[$row][$col] === 1) {
+                $q->enqueue([$row, $col]);
+                break 2;
+            }
+        }
+    }
+    
+    while (!($q->isEmpty())) {
+        $cell = $q->dequeue();
+        [$row, $col] = $cell;
+        $reached[$row][$col] = 1;
+        if (0 < $row && $matrix[$row - 1][$col] === 1 && !$reached[$row - 1][$col]) {
+            $q->enqueue([$row - 1, $col]);
+        }
+        if ($row < 3 && $matrix[$row + 1][$col] === 1 && !$reached[$row + 1][$col]) {
+            $q->enqueue([$row + 1, $col]);
+        }
+        if (0 < $col && $matrix[$row][$col - 1] === 1 && !$reached[$row][$col - 1]) {
+            $q->enqueue([$row, $col - 1]);
+        }
+        if ($col < 3 && $matrix[$row][$col + 1] === 1 && !$reached[$row][$col + 1]) {
+            $q->enqueue([$row, $col + 1]);
+        }
+    }
+    
+    return $reached === $matrix;
+}
+
+// 辺で連結なものだけ表示してみよう
 foreach (combination(16, 4) as $placement) {
-    visualize_array(to_array($placement));
+    if (is_connected(to_array($placement))) {
+        visualize_array(to_array($placement));
+    }
 }
