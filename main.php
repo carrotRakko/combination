@@ -43,6 +43,22 @@ function visualize(int $placement): void
 }
 
 // 表示してみよう
+// foreach (combination(16, 4) as $placement) {
+//     visualize($placement);
+// }
+
+function to_array(int $placement): array
+{
+    $matrix = array_fill(0, 4, array_fill(0, 4, []));
+    for ($row = 0; $row <= 3; $row++) {
+        for ($col = 0; $col <= 3; $col++) {
+            $matrix[$row][$col] = ($placement >> (15 - 4 * $row - $col)) % 2;
+        }
+    }
+    return $matrix;
+}
+
+// 配列になったのでPHPで扱いやすくなりました
 foreach (combination(16, 4) as $placement) {
-    visualize($placement);
+    var_dump(to_array($placement));
 }
