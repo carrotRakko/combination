@@ -1,3 +1,3 @@
-# combination/combination.php
+# carrotRakko/tetromino
 
-4次元におけるテトロミノを列挙しようとする過程で必要に応じて作った組み合わせ関数です
+4次元におけるテトロミノをゴリ押しで列挙しようとする試みです
