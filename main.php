@@ -65,8 +65,8 @@ function to_array(int $placement): array
 
 function visualize_array(array $matrix): void
 {
-    for ($row = 0; $row <= 3; $row++) {
-        for ($col = 0; $col <= 3; $col++) {
+    for ($row = 0; $row <= count($matrix) - 1; $row++) {
+        for ($col = 0; $col <= count($matrix[0]) - 1; $col++) {
             if ($matrix[$row][$col] === 1) {
                 echo '#';
             } else {
@@ -83,7 +83,7 @@ function visualize_array(array $matrix): void
 //     visualize_array(to_array($placement));
 // }
 
-function is_connected($matrix): bool
+function is_connected(array $matrix): bool
 {
     $q = new SplQueue();
     $reached = array_fill(0, 4, array_fill(0, 4, 0));
@@ -119,8 +119,52 @@ function is_connected($matrix): bool
 }
 
 // 辺で連結なものだけ表示してみよう
+// foreach (combination(16, 4) as $placement) {
+//     if (is_connected(to_array($placement))) {
+//         visualize_array(to_array($placement));
+//     }
+// }
+
+function cut_off(array $matrix): array
+{
+    $row_cut_off = [];
+    
+    for ($row = 0; $row <= count($matrix) - 1; $row++) {
+        $empty = true;
+        for ($col = 0; $col <= count($matrix[0]) - 1; $col++) {
+            if ($matrix[$row][$col] === 1) {
+                $empty = false;
+                break;
+            }
+        }
+        if (!$empty) {
+            $row_cut_off[] = $matrix[$row];
+        }
+    }
+    
+    $col_cut_off = array_fill(0, count($row_cut_off), []);
+    for ($col = 0; $col <= count($row_cut_off[0]) - 1; $col++) {
+        $empty = true;
+        for ($row = 0; $row <= count($row_cut_off) - 1; $row++) {
+            if ($row_cut_off[$row][$col] === 1) {
+                $empty = false;
+                break;
+            }
+        }
+        if (!$empty) {
+            for ($row = 0; $row <= count($row_cut_off) - 1; $row++) {
+                $col_cut_off[$row][] = $row_cut_off[$row][$col];
+            }
+        }
+    }
+    
+    return $col_cut_off;
+}
+
+
+// 周りの空白を取り除いてみよう
 foreach (combination(16, 4) as $placement) {
     if (is_connected(to_array($placement))) {
-        visualize_array(to_array($placement));
+        visualize_array(cut_off(to_array($placement)));
     }
 }
