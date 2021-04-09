@@ -104,13 +104,13 @@ function is_connected(array $matrix): bool
         if (0 < $row && $matrix[$row - 1][$col] === 1 && !$reached[$row - 1][$col]) {
             $q->enqueue([$row - 1, $col]);
         }
-        if ($row < 3 && $matrix[$row + 1][$col] === 1 && !$reached[$row + 1][$col]) {
+        if ($row < count($matrix) - 1 && $matrix[$row + 1][$col] === 1 && !$reached[$row + 1][$col]) {
             $q->enqueue([$row + 1, $col]);
         }
         if (0 < $col && $matrix[$row][$col - 1] === 1 && !$reached[$row][$col - 1]) {
             $q->enqueue([$row, $col - 1]);
         }
-        if ($col < 3 && $matrix[$row][$col + 1] === 1 && !$reached[$row][$col + 1]) {
+        if ($col < count($matrix[0]) - 1 && $matrix[$row][$col + 1] === 1 && !$reached[$row][$col + 1]) {
             $q->enqueue([$row, $col + 1]);
         }
     }
@@ -171,11 +171,10 @@ function cut_off(array $matrix): array
 
 function rotate90(array $matrix): array
 {
-    $ans = [];
-    for ($row = 0; $row <= count($matrix[0]) - 1; $row++) {
-        $ans[] = [];
-        for ($col = count($matrix) - 1; 0 <= $col; $col--) {
-            $ans[$row][$col] = $matrix[$col][$row];
+    $ans = array_fill(0, count($matrix[0]), array_fill(0, count($matrix), null));
+    for ($row = 0; $row <= count($matrix) - 1; $row++) {
+        for ($col = 0; $col <= count($matrix[0]) - 1; $col++) {
+            $ans[$col][count($matrix) - 1 - $row] = $matrix[$row][$col];
         }
     }
     return $ans;
@@ -189,4 +188,41 @@ function rotate180(array $matrix): array
 function rotate270(array $matrix): array
 {
     return rotate90(rotate90(rotate90($matrix)));
+}
+
+$tetromino_list = [];
+foreach (combination(16, 4) as $placement) {
+    $matrix = to_array($placement);
+    if (!is_connected($matrix)) {
+        continue;
+    }
+    $matrix = cut_off($matrix);
+    
+    $already_exists = false;
+    foreach ($tetromino_list as $tetromino) {
+        if ($tetromino === $matrix) {
+            $already_exists = true;
+            break;
+        }
+        if ($tetromino === rotate90($matrix)) {
+            $already_exists = true;
+            break;
+        }
+        if ($tetromino === rotate180($matrix)) {
+            $already_exists = true;
+            break;
+        }
+        if ($tetromino === rotate270($matrix)) {
+            $already_exists = true;
+            break;
+        }
+    }
+    if (!$already_exists) {
+        $tetromino_list[] = $matrix;
+    }
+}
+
+// これで完了！
+foreach ($tetromino_list as $tetromino) {
+    visualize_array($tetromino);
 }
