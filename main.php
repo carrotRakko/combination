@@ -163,8 +163,30 @@ function cut_off(array $matrix): array
 
 
 // 周りの空白を取り除いてみよう
-foreach (combination(16, 4) as $placement) {
-    if (is_connected(to_array($placement))) {
-        visualize_array(cut_off(to_array($placement)));
+// foreach (combination(16, 4) as $placement) {
+//     if (is_connected(to_array($placement))) {
+//         visualize_array(cut_off(to_array($placement)));
+//     }
+// }
+
+function rotate90(array $matrix): array
+{
+    $ans = [];
+    for ($row = 0; $row <= count($matrix[0]) - 1; $row++) {
+        $ans[] = [];
+        for ($col = count($matrix) - 1; 0 <= $col; $col--) {
+            $ans[$row][$col] = $matrix[$col][$row];
+        }
     }
+    return $ans;
+}
+
+function rotate180(array $matrix): array
+{
+    return rotate90(rotate90($matrix));
+}
+
+function rotate270(array $matrix): array
+{
+    return rotate90(rotate90(rotate90($matrix)));
 }
