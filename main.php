@@ -2,94 +2,57 @@
 
 declare(strict_types=1);
 
-function combination(int $n, int $k): array
+/**
+ * @param int $n $_{n}C_{k}$ で言うところの `n`
+ * @param int $k $_{n}C_{k}$ で言うところの `k`
+ * 
+ * @return array 組み合わせをビットで表したものの配列
+ */
+function bit_combination(int $n, int $k): array
 {
     if ($k === 0) {
         return [0];
     }
     
-    $ans = [];
+    $bit_combination_list = [];
     for ($i = $n; 1 <= $i; $i--) {
-        $sub_list = combination($i - 1, $k - 1);
-        foreach ($sub_list as $sub) {
-            $ans[] = (1 << ($i - 1)) + $sub;
+        $sub_bit_combination_list = bit_combination($i - 1, $k - 1);
+        foreach ($sub_bit_combination_list as $sub_bit_combination) {
+            $bit_combination_list[] = (1 << ($i - 1)) + $sub_bit_combination;
         }
     }
-    return $ans;
+    return $bit_combination_list;
 }
 
-// 10進表記なので合ってるのかわかりにくい
-// var_dump(combination(16, 4));
-
-// 2進表記にするとちょっとわかりやすくなる
-// var_dump(array_map('decbin', combination(16, 4)));
-
-// 0埋めするともうちょっとわかりやすくなる
-// var_dump(array_map(fn ($c) => str_pad(decbin($c), 16, '0', STR_PAD_LEFT), combination(16, 4)));
-
-function visualize(int $placement): void
+/**
+ * @param int $c ポリオミノを構成するタイルの数
+ * @param int $bit_combination ビット形式の組み合わせ
+ * 
+ * @return array 2次元配列形式の組み合わせ
+ */
+function bit_combination_to_matrix_combination(int $c, int $bit_combination): array
 {
-    for ($row = 0; $row <= 3; $row++) {
-        for ($col = 0; $col <= 3; $col++) {
-            if (($placement >> (15 - 4 * $row - $col)) % 2 === 1) {
-                echo '#';
-            } else {
-                echo '.';
-            }
-        }
-        echo "\n";
-    }
-    echo "\n";
-}
-
-// 表示してみよう
-// foreach (combination(16, 4) as $placement) {
-//     visualize($placement);
-// }
-
-function to_array(int $placement): array
-{
-    $matrix = array_fill(0, 4, array_fill(0, 4, []));
-    for ($row = 0; $row <= 3; $row++) {
-        for ($col = 0; $col <= 3; $col++) {
-            $matrix[$row][$col] = ($placement >> (15 - 4 * $row - $col)) % 2;
+    $matrix = array_fill(0, $c, array_fill(0, $c, []));
+    for ($row = 0; $row < $c; $row++) {
+        for ($col = 0; $col < $c; $col++) {
+            $matrix[$row][$col] = ($bit_combination >> ($c * $c - 1 - $c * $row - $col)) % 2;
         }
     }
     return $matrix;
 }
 
-// 配列になったのでPHPで扱いやすくなりました
-// foreach (combination(16, 4) as $placement) {
-//     var_dump(to_array($placement));
-// }
-
-function visualize_array(array $matrix): void
-{
-    for ($row = 0; $row <= count($matrix) - 1; $row++) {
-        for ($col = 0; $col <= count($matrix[0]) - 1; $col++) {
-            if ($matrix[$row][$col] === 1) {
-                echo '#';
-            } else {
-                echo '.';
-            }
-        }
-        echo "\n";
-    }
-    echo "\n";
-}
-
-// 表示してみよう
-// foreach (combination(16, 4) as $placement) {
-//     visualize_array(to_array($placement));
-// }
-
+/**
+ * @param array $matrix ポリオミノ（というかポリオミノもどき）を2次元配列で表したもの
+ * 
+ * @return bool 連結か？
+ */
 function is_connected(array $matrix): bool
 {
     $q = new SplQueue();
-    $reached = array_fill(0, 4, array_fill(0, 4, 0));
+    $reached = array_fill(0, count($matrix), array_fill(0, count($matrix[0]), 0));
     
-    for ($row = 0; $row <= 3; $row++) {
-        for ($col = 0; $col <= 3; $col++) {
+    for ($row = 0; $row < count($matrix); $row++) {
+        for ($col = 0; $col < count($matrix[0]); $col++) {
             if ($matrix[$row][$col] === 1) {
                 $q->enqueue([$row, $col]);
                 break 2;
@@ -118,20 +81,16 @@ function is_connected(array $matrix): bool
     return $reached === $matrix;
 }
 
-// 辺で連結なものだけ表示してみよう
-// foreach (combination(16, 4) as $placement) {
-//     if (is_connected(to_array($placement))) {
-//         visualize_array(to_array($placement));
-//     }
-// }
-
+/**
+ * @param array $matrix ポリオミノを2次元配列で表したもの
+ */
 function cut_off(array $matrix): array
 {
     $row_cut_off = [];
     
-    for ($row = 0; $row <= count($matrix) - 1; $row++) {
+    for ($row = 0; $row < count($matrix); $row++) {
         $empty = true;
-        for ($col = 0; $col <= count($matrix[0]) - 1; $col++) {
+        for ($col = 0; $col < count($matrix[0]); $col++) {
             if ($matrix[$row][$col] === 1) {
                 $empty = false;
                 break;
@@ -161,14 +120,9 @@ function cut_off(array $matrix): array
     return $col_cut_off;
 }
 
-
-// 周りの空白を取り除いてみよう
-// foreach (combination(16, 4) as $placement) {
-//     if (is_connected(to_array($placement))) {
-//         visualize_array(cut_off(to_array($placement)));
-//     }
-// }
-
+/**
+ * @param array $matrix ポリオミノを2次元配列で表したもの
+ */
 function rotate90(array $matrix): array
 {
     $ans = array_fill(0, count($matrix[0]), array_fill(0, count($matrix), null));
@@ -180,49 +134,82 @@ function rotate90(array $matrix): array
     return $ans;
 }
 
-function rotate180(array $matrix): array
+/**
+ * @param int $c ポリオミノを構成するタイルの数
+ * 
+ * @return array ポリオミノを2次元配列で表したものの配列
+ */
+function find_polyomino_list(int $c): array
 {
-    return rotate90(rotate90($matrix));
-}
-
-function rotate270(array $matrix): array
-{
-    return rotate90(rotate90(rotate90($matrix)));
-}
-
-$tetromino_list = [];
-foreach (combination(16, 4) as $placement) {
-    $matrix = to_array($placement);
-    if (!is_connected($matrix)) {
-        continue;
-    }
-    $matrix = cut_off($matrix);
+    // まずビット形式で組み合わせを列挙する
+    $c_times_c_bit_combination_list = bit_combination($c * $c, $c);
     
-    $already_exists = false;
-    foreach ($tetromino_list as $tetromino) {
-        if ($tetromino === $matrix) {
-            $already_exists = true;
-            break;
+    // 次にビット形式の組み合わせを2次元配列形式の組み合わせに変換する
+    $c_times_c_matrix_combination_list = array_map(
+        function (int $bit_combination) use ($c): array {
+            return bit_combination_to_matrix_combination($c, $bit_combination);
+        },
+        $c_times_c_bit_combination_list
+    );
+    
+    // 連結でないポリオミノ（というかポリオミノもどき）を除外する
+    $duplicated_polyomino_list = array_values(array_filter($c_times_c_matrix_combination_list, 'is_connected'));
+    
+    // ポリオミノの周りの余計な行や列を切り取る
+    $duplicated_polynomio_list = array_map('cut_off', $duplicated_polyomino_list);
+    
+    // ここにユニークなポリオミノを入れていく
+    $polyomino_list = [];
+    
+    // 重複除去
+    foreach ($duplicated_polynomio_list as $maybe_duplicated_polyomino) {
+        $already_exists = false;
+        foreach ($polyomino_list as $polyomino) {
+            if ($polyomino === $maybe_duplicated_polyomino) {
+                $already_exists = true;
+                break;
+            }
+            if ($polyomino === rotate90($maybe_duplicated_polyomino)) {
+                $already_exists = true;
+                break;
+            }
+            if ($polyomino === rotate90(rotate90($maybe_duplicated_polyomino))) {
+                $already_exists = true;
+                break;
+            }
+            if ($polyomino === rotate90(rotate90(rotate90($maybe_duplicated_polyomino)))) {
+                $already_exists = true;
+                break;
+            }
         }
-        if ($tetromino === rotate90($matrix)) {
-            $already_exists = true;
-            break;
-        }
-        if ($tetromino === rotate180($matrix)) {
-            $already_exists = true;
-            break;
-        }
-        if ($tetromino === rotate270($matrix)) {
-            $already_exists = true;
-            break;
+        if (!$already_exists) {
+            $polyomino_list[] = $maybe_duplicated_polyomino;
         }
     }
-    if (!$already_exists) {
-        $tetromino_list[] = $matrix;
-    }
+    
+    return $polyomino_list;
 }
 
-// これで完了！
-foreach ($tetromino_list as $tetromino) {
-    visualize_array($tetromino);
+/**
+ * @param array $matrix ポリオミノを2次元配列で表したもの
+ * 
+ * @retunr void
+ */
+function visualize_matrix(array $matrix): void
+{
+    for ($row = 0; $row < count($matrix); $row++) {
+        for ($col = 0; $col < count($matrix[0]); $col++) {
+            if ($matrix[$row][$col] === 1) {
+                echo '#';
+            } else {
+                echo '.';
+            }
+        }
+        echo "\n";
+    }
+    echo "\n";
+}
+
+foreach (find_polyomino_list(4) as $polyomino) {
+    visualize_matrix($polyomino);
 }
